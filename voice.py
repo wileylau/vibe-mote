@@ -1196,7 +1196,7 @@ class VoiceRole(threading.Thread):
             self._emit("status", {"connected": False, "note": self.note})
             # ★ 退避：原来固定 3 秒重试一轮，一晚上能发起上万次连接，而每次超时都是
             #   一条"半开"的 WinRT 连接留在蓝牙栈里 —— 反倒更容易把设备拖在"已连接"
-            #   状态、再也不广播。改成成功即重置、失败越久越慢（3→6→12→24→45 封顶）。
+            #   状态、再也不广播。改成成功即重置、失败越久越慢（3→6→12→24→48→60 封顶）。
             if getattr(self, "_no_addr", False):
                 # 还没填遥控器地址：这不是"连不上"，别拿它刷"已连续 N 次没连上"
                 # （新用户首启会看到这条，容易误读成程序坏了）。
@@ -1205,7 +1205,7 @@ class VoiceRole(threading.Thread):
             else:
                 fails = 0 if getattr(self, "_session_ok", False) else getattr(self, "_fails", 0) + 1
                 self._fails = fails
-                delay = min(3.0 * (2 ** min(fails, 4)), 45.0)
+                delay = min(3.0 * (2 ** min(fails, 5)), 60.0)
                 if fails >= 8 and fails % 8 == 0:
                     self._log(f"语音：已连续 {fails} 次没连上，退避到 {delay:.0f} 秒；"
                               f"若一直这样，关开一次蓝牙开关再重试")
