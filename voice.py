@@ -1343,7 +1343,10 @@ class VoiceRole(threading.Thread):
         await client.start_notify(status, on_status)
         if ctl:
             try:
-                await client.write_gatt_char(ctl, bytes([0x0A, 0x00, 0x04, 0x00, 0x01]),
+                # ★ 必须声明 ATVV v1.0 + 16k 编解码 + 按住/切换交互位。旧的
+                #   [0A 00 04 00 01] 是 v0.4 那套：遥控器虽回 CAPS，却只发
+                #   AUDIO_START/STOP、不发音频帧（日志表现就是 0 帧）。
+                await client.write_gatt_char(ctl, bytes([0x0A, 0x01, 0x00, 0x00, 0x02, 0x03]),
                                              response=False)
             except Exception as e:
                 self._log(f"语音：GET_CAPS 发送失败（不影响收流）: {e}")
