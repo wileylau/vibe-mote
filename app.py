@@ -54,7 +54,10 @@ WEB = os.path.join(HERE, "web")
 CONFIG = os.path.join(HERE, "config.json")
 REQUIREMENTS = os.path.join(HERE, "requirements.txt")
 WHEELS = os.path.join(HERE, "wheels")
-LOCKS = 49741                      # 单实例锁（只在 127.0.0.1）
+# 单实例锁（只在 127.0.0.1）。别用 49xxx-65xxx：Windows/Hyper-V/WSL 会把
+# 那段端口整段保留（netsh interface ipv4 show excludedportrange），bind 直接
+# 报 WinError 10013，启动就会误判成"已有另一个实例在跑"而界面端口没起来。
+LOCKS = 41741
 LOCK_PORT = LOCKS
 VENV = os.path.join(HERE, ".venv")
 VENV_PY = os.path.join(VENV, "Scripts", "python.exe")
