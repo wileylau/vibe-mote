@@ -1358,26 +1358,9 @@ class VoiceRole(threading.Thread):
                 except Exception:
                     pass
 
-        self._log("语音：特征表 " + ", ".join(
-            f"{str(c.uuid)[:8]}/0x{c.handle:x}/{','.join(c.properties)}"
-            for c in chars))
         # 音频订阅必须先于状态订阅，避免丢掉起始帧
         await client.start_notify(audio, on_audio)
         await client.start_notify(status, on_status)
-        # 临时诊断：其余可通知特征也挂上，确认音频帧到底落在哪条特征上
-        _misc = [0]
-        for c in chars:
-            if c in (audio, status) or not ({"notify", "indicate"} & set(c.properties)):
-                continue
-            def _any(_c, data, _u=str(c.uuid)):
-                _misc[0] += 1
-                if _misc[0] <= 8:
-                    b = bytes(data)
-                    self._log(f"语音：杂项通知 {_u} len={len(b)} {b[:8].hex()}")
-            try:
-                await client.start_notify(c, _any)
-            except Exception:
-                pass
         if ctl:
             try:
                 # ★ 必须声明 ATVV v1.0 + 16k 编解码 + 按住/切换交互位。旧的
@@ -1421,12 +1404,6 @@ class VoiceRole(threading.Thread):
     # ---------- 语音键事件 ----------
     def _on_status(self, b: bytes):
         active = getattr(self, "_active", False)
-        if b[0] == 0x0B:
-            fs = ((b[5] << 8) | b[6]) if len(b) >= 7 else 0
-            self._log(f"语音：能力协商 {b.hex()}（帧长 {fs}）")
-            return
-        if b[0] in (0x04, 0x00):
-            self._log(f"语音：ATVV 控制帧 {b.hex()}")
         if b[0] == 0x04 and not active:
             self._active = True
             self.sessions += 1
@@ -1449,12 +1426,6 @@ class VoiceRole(threading.Thread):
                 self._log("语音：⚠ 音频帧太少 —— 遥控器没在送音频（多半没真正进录音态）")
             elif self.sink is None:
                 self._log("语音：⚠ 音频出口还没就绪，这段没送出去（看护任务正在重试）")
-        elif b[0] not in (0x00, 0x04):
-            # 既不是"开始说话"(0x04) 也不是"结束"(0x00)：把原始字节打出来。
-            # 遥控器换过固件/重新配对之后，通知里的操作码**有可能不一样** ——
-            # 以前这种情况会被静默丢掉，表现就是"按语音键日志一行都没有"，
-            # 让排查变成瞎猜。这里留一行原始帧，一眼就能看出它到底发了什么。
-            self._log(f"语音：未识别的状态帧 {b.hex()}（首字节 0x{b[0]:02x}）")
 
     def stop(self):
         self.stop_flag.set()
