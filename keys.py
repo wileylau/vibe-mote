@@ -606,7 +606,7 @@ class KeyTap(threading.Thread):
                                   f"重新挂上去")
                         self._teardown_session()
                         continue
-                    time.sleep(1.0)
+                    time.sleep(5.0)   # HID 宿主重启极少见；5 秒一查够快，别空转 1 Hz
             except Exception as e:
                 self._session = None
                 self._script = None
