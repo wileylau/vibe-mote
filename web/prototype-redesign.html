@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>vibe-mote · redesign options (PROTOTYPE)</title>
+<style>
+/* ============================================================
+   PROTOTYPE — throwaway. Four structurally different redesigns.
+   Switch with ?variant=A|B|C|D or the floating bar / arrow keys.
+   Read-only: all numbers below are synthetic but true to the app.
+   ============================================================ */
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit}
+.proto-note{position:fixed;bottom:16px;left:16px;z-index:99;background:#111;color:#fff;font:10px/1.5 ui-monospace,monospace;padding:5px 9px;border-radius:5px;letter-spacing:.03em;max-width:230px}
+
+/* ---- shared remote drawing ---- */
+.rm{position:relative;user-select:none;flex:0 0 auto}
+.rm .row{display:flex;align-items:center;justify-content:center}
+.rm .btn{border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:transform .1s,box-shadow .16s,background .16s}
+.rm .btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rm .btn svg.fill{fill:currentColor;stroke:none}
+.rm .lbl{font-size:9px;font-weight:700;letter-spacing:.02em}
+
+/* ============================================================
+   A · INSTRUMENT — dark tactile cluster, remote as the object
+   ============================================================ */
+.v-A{--bg:#0c0f14;--panel:#141920;--line:#232b36;--ink:#e8edf5;--mut:#7d879a;--sig:#4de0c4;--acc:#5b8cff;
+  min-height:100vh;background:radial-gradient(900px 500px at 50% -8%,rgba(91,140,255,.10),transparent 62%),var(--bg);color:var(--ink);display:grid;grid-template-columns:62px 1fr 300px}
+.v-A .rail{border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:8px;padding:54px 0 18px}
+.v-A .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(145deg,var(--acc),#3455c0);display:grid;place-items:center;font-weight:800;font-size:15px;margin-bottom:16px}
+.v-A .ric{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:var(--mut);cursor:pointer}
+.v-A .ric.on{color:var(--ink);background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+.v-A .ric svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7}
+.v-A .stage{padding:54px 34px 30px;min-width:0;display:flex;flex-direction:column;align-items:center}
+.v-A .eyebrow{font:11px ui-monospace,monospace;letter-spacing:.22em;color:var(--sig);text-transform:uppercase}
+.v-A h1{font-size:30px;font-weight:600;letter-spacing:-.03em;margin:10px 0 4px}
+.v-A .sub{color:var(--mut);font-size:13px;margin-bottom:26px}
+.v-A .cradle{position:relative;padding:30px;border-radius:28px;background:radial-gradient(circle at 50% 35%,rgba(91,140,255,.12),transparent 60%);border:1px solid var(--line)}
+.v-A .cradle::after{content:"";position:absolute;left:12%;right:12%;bottom:-26px;height:30px;background:radial-gradient(ellipse,rgba(0,0,0,.6),transparent 70%);filter:blur(6px)}
+.v-A .rm{width:186px;height:430px;border-radius:30px;padding:18px;background:linear-gradient(155deg,#3b434e,#1a1f26 55%,#11151a);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 24px 50px -16px #000;display:flex;flex-direction:column;gap:14px;align-items:center}
+.v-A .rm .rhead{width:100%;display:flex;justify-content:space-between;padding:0 8px}
+.v-A .rm .led{width:6px;height:6px;border-radius:50%;background:var(--sig);box-shadow:0 0 9px var(--sig);align-self:center}
+.v-A .rm .btn{width:42px;height:42px;border-radius:50%;color:#cdd6e3;background:linear-gradient(180deg,#414a56,#2a313b);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 2px 4px #000}
+.v-A .rm .btn:hover{filter:brightness(1.15)}
+.v-A .rm .mic{background:linear-gradient(180deg,#525d6d,#333c48);color:#eaf1ff}
+.v-A .rm .pad{position:relative;width:132px;height:132px;border-radius:50%;background:radial-gradient(circle at 42% 30%,#3a434f,#171c22 72%);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 3px 8px #000;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center;padding:7px}
+.v-A .rm .pad .btn{width:34px;height:34px;background:transparent;box-shadow:none;border-radius:9px}
+.v-A .rm .pad .ok{width:44px;height:44px;border-radius:50%;background:linear-gradient(180deg,#454f5c,#2b323b);font-size:11px;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.13)}
+.v-A .rm .pill{width:58px;height:44px;border-radius:12px}
+.v-A .rm .btn.lit{background:linear-gradient(180deg,var(--sig),#25a98f);color:#04120f;box-shadow:0 0 22px rgba(77,224,196,.75),0 0 0 3px rgba(77,224,196,.22);transform:translateY(1px) scale(.95)}
+.v-A .rm .rock{position:absolute;right:-9px;top:44%;display:flex;flex-direction:column;border-radius:7px;overflow:hidden;box-shadow:0 3px 7px #000}
+.v-A .rm .rock .btn{width:19px;height:34px;border-radius:0;font-size:13px}
+.v-A .events{margin-top:26px;width:min(560px,100%);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+.v-A .events .eh{padding:9px 14px;font:10px ui-monospace,monospace;letter-spacing:.18em;color:var(--mut);border-bottom:1px solid var(--line)}
+.v-A .events .er{display:flex;align-items:center;gap:12px;padding:8px 14px;font:11.5px ui-monospace,monospace;border-bottom:1px solid var(--line);color:#aab4c4}
+.v-A .events .er:last-child{border:0}
+.v-A .events .er .d{color:var(--sig)}
+.v-A .tele{border-left:1px solid var(--line);padding:54px 18px 18px;display:flex;flex-direction:column;gap:14px}
+.v-A .gauge{border:1px solid var(--line);border-radius:14px;padding:15px;background:var(--panel)}
+.v-A .gauge .gl{font:10px ui-monospace,monospace;letter-spacing:.16em;color:var(--mut)}
+.v-A .gauge .gv{font-size:20px;font-weight:600;margin:8px 0 4px}
+.v-A .gauge .track{height:4px;border-radius:4px;background:#222a35;margin-top:10px;overflow:hidden}
+.v-A .gauge .track i{display:block;height:100%;border-radius:4px;background:var(--sig)}
+.v-A .gauge.warn .gv{color:#ffca6a}
+.v-A .gauge.warn .track i{background:#ffca6a}
+.v-A .mini{margin-top:auto;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel);font:11px ui-monospace,monospace;color:var(--mut);line-height:1.9}
+.v-A .mini b{color:var(--ink);font-weight:600}
+
+/* ============================================================
+   B · COMMAND DECK — light, dense, data-forward grid
+   ============================================================ */
+.v-B{--bg:#f6f7f9;--panel:#fff;--line:#e2e5ea;--ink:#16181d;--mut:#6b7280;--acc:#4f46e5;--ok:#0f9f6e;
+  background:var(--bg);color:var(--ink);min-height:100vh;font-size:13px}
+.v-B .top{height:56px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:26px;padding:0 26px;position:sticky;top:0}
+.v-B .brand{font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+.v-B .brand i{width:22px;height:22px;border-radius:6px;background:var(--acc);display:grid;place-items:center;color:#fff;font-style:normal;font-size:12px}
+.v-B .tabs{display:flex;gap:4px}
+.v-B .tab{padding:7px 12px;border-radius:7px;color:var(--mut);cursor:pointer}
+.v-B .tab.on{background:#eef0fe;color:var(--acc);font-weight:600}
+.v-B .pill{margin-left:auto;display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--mut);font-size:12px}
+.v-B .pill i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.v-B .btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:7px 12px;cursor:pointer;color:var(--ink)}
+.v-B .btn.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.v-B .wrap{max-width:1240px;margin:0 auto;padding:22px 26px 40px}
+.v-B .grid{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:14px}
+.v-B .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0}
+.v-B .card h3{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);margin:0 0 14px;font-weight:700}
+.v-B .card.span2{grid-column:span 2}
+.v-B .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.v-B .kpi{border:1px solid var(--line);border-radius:10px;padding:13px}
+.v-B .kpi .n{font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.v-B .kpi .l{font-size:11px;color:var(--mut);margin-top:2px}
+.v-B .kpi.bad .n{color:#d13b3b}
+.v-B .rows{display:flex;flex-direction:column}
+.v-B .r{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.v-B .r:last-child{border:0}
+.v-B .r .k{color:var(--mut)}
+.v-B .r .v{font-variant-numeric:tabular-nums;text-align:right}
+.v-B .tag{font:10px ui-monospace,monospace;padding:2px 7px;border-radius:5px;background:#eef0fe;color:var(--acc)}
+.v-B .tag.ok{background:#e6f7ef;color:var(--ok)}
+.v-B .tag.mut{background:#f0f1f3;color:var(--mut)}
+.v-B .check{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.v-B .check:last-child{border:0}
+.v-B .check .box{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--ok);background:#e6f7ef;color:var(--ok);display:grid;place-items:center;font-size:10px;font-weight:800;flex:0 0 16px}
+.v-B .check.miss .box{border-color:#d13b3b;background:#fdecec;color:#d13b3b}
+.v-B .check .t{flex:1}
+.v-B .check .sub{font-size:10.5px;color:var(--mut)}
+.v-B .remote-mini{display:flex;justify-content:center;padding:6px 0 2px}
+.v-B .rm{width:104px;height:250px;border-radius:18px;padding:11px;background:linear-gradient(155deg,#3d434c,#191d22);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 10px 20px -8px #000;display:flex;flex-direction:column;gap:8px;align-items:center}
+.v-B .rm .rhead{width:100%;display:flex;justify-content:space-between;padding:0 4px}
+.v-B .rm .led{width:4px;height:4px;border-radius:50%;background:var(--acc)}
+.v-B .rm .btn{width:24px;height:24px;border-radius:50%;color:#c9d0da;background:#3a414b}
+.v-B .rm .btn svg{width:11px;height:11px}
+.v-B .rm .pad{width:76px;height:76px;border-radius:50%;background:#22272e;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center;padding:4px}
+.v-B .rm .pad .btn{width:20px;height:20px;background:transparent;border-radius:5px}
+.v-B .rm .pad .ok{width:26px;height:26px;background:#454c56;font-size:7px}
+.v-B .rm .pill{width:32px;height:24px;border-radius:7px}
+.v-B .rm .lbl{font-size:6px}
+.v-B .rm .rock{position:absolute;right:-6px;top:44%;display:flex;flex-direction:column}
+.v-B .rm .rock .btn{width:11px;height:19px;border-radius:0}
+.v-B .rm .btn.lit{background:var(--acc);color:#fff;box-shadow:0 0 12px var(--acc)}
+.v-B table{width:100%;border-collapse:collapse;font-size:12px}
+.v-B td{padding:7px 4px;border-bottom:1px solid var(--line)}
+.v-B td:last-child{text-align:right;font-family:ui-monospace,monospace;color:var(--acc)}
+.v-B .feed .f{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font:11.5px ui-monospace,monospace}
+.v-B .feed .f:last-child{border:0}
+.v-B .feed .t{color:var(--mut)}
+.v-B .feed .k{color:var(--acc);font-weight:700}
+.v-B .actions{display:flex;flex-wrap:wrap;gap:8px}
+.v-B .actions .btn{font-size:12px}
+
+/* ============================================================
+   C · FIELD MANUAL — warm editorial, narrative setup
+   ============================================================ */
+.v-C{--paper:#f3efe6;--ink:#221f1a;--mut:#6f685d;--rule:#d8d1c3;--sig:#c9502e;
+  background:var(--paper);color:var(--ink);min-height:100vh}
+.v-C .top{max-width:960px;margin:0 auto;padding:26px 28px 0;display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--rule)}
+.v-C .brand{font:700 15px Georgia,serif;letter-spacing:.01em}
+.v-C .brand span{font:400 11px ui-monospace,monospace;color:var(--mut);margin-left:10px}
+.v-C .conn{font:11px ui-monospace,monospace;color:var(--sig)}
+.v-C main{max-width:960px;margin:0 auto;padding:48px 28px 70px}
+.v-C .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding-bottom:40px;border-bottom:1px solid var(--rule)}
+.v-C h1{font:400 52px/1.04 Georgia,"Times New Roman",serif;letter-spacing:-.03em;margin:0 0 16px}
+.v-C h1 em{font-style:italic;color:var(--sig)}
+.v-C .lead{font:16px/1.65 Georgia,serif;color:var(--mut);max-width:44ch}
+.v-C .rm{width:150px;height:360px;margin:auto;border-radius:24px;padding:16px;background:#26282a;border:1px solid #4a4d50;box-shadow:0 18px 34px -16px rgba(34,31,26,.5);display:flex;flex-direction:column;gap:12px;align-items:center}
+.v-C .rm .rhead{width:100%;display:flex;justify-content:space-between;padding:0 6px}
+.v-C .rm .led{width:5px;height:5px;border-radius:50%;border:1px solid #9a9ea3;align-self:center}
+.v-C .rm .btn{width:34px;height:34px;border-radius:50%;background:transparent;border:1.5px solid #979b9f;color:#d7dadd}
+.v-C .rm .btn svg{width:15px;height:15px}
+.v-C .rm .pad{width:108px;height:108px;border-radius:50%;border:1.5px solid #979b9f;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center}
+.v-C .rm .pad .btn{width:28px;height:28px;border:0}
+.v-C .rm .pad .ok{width:36px;height:36px;border:1.5px solid #979b9f;font:700 9px ui-monospace,monospace}
+.v-C .rm .pill{width:46px;height:34px;border-radius:11px}
+.v-C .rm .lbl{font:700 7px ui-monospace,monospace;letter-spacing:.08em}
+.v-C .rm .rock{position:absolute;right:-7px;top:44%;display:flex;flex-direction:column}
+.v-C .rm .rock .btn{width:15px;height:26px;border-radius:5px;font:700 11px ui-monospace,monospace}
+.v-C .rm .btn.lit{background:var(--sig);border-color:var(--sig);color:#fff;box-shadow:0 0 16px rgba(201,80,46,.6)}
+.v-C .figcap{text-align:center;font:italic 12px Georgia,serif;color:var(--mut);margin-top:12px}
+.v-C .sec{margin-top:46px}
+.v-C .sec h2{font:400 13px ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--sig);margin:0 0 22px}
+.v-C .step{display:grid;grid-template-columns:46px 1fr auto;gap:16px;padding:18px 0;border-bottom:1px solid var(--rule);align-items:start}
+.v-C .step:last-child{border:0}
+.v-C .step .num{font:400 22px Georgia,serif;color:var(--mut)}
+.v-C .step .body h4{font:600 16px Georgia,serif;margin:0 0 5px}
+.v-C .step .body p{font:13.5px/1.6 Georgia,serif;color:var(--mut);margin:0;max-width:58ch}
+.v-C .step .state{font:11px ui-monospace,monospace;padding:4px 9px;border:1px solid var(--ok, #3b7a55);color:#3b7a55;border-radius:2px;white-space:nowrap}
+.v-C .step .state.no{border-color:#b6533a;color:#b6533a}
+.v-C .note{margin-top:44px;padding:20px 22px;border-left:2px solid var(--sig);background:rgba(201,80,46,.05);font:14px/1.7 Georgia,serif;color:var(--ink)}
+.v-C .note b{color:var(--sig)}
+
+/* ============================================================
+   D · ONE SCREEN — full-bleed device, HUD, dock
+   ============================================================ */
+.v-D{--bg:#07090c;--ink:#f2f5fa;--mut:#7b8593;--live:#c9ff4d;--acc:#6ea8ff;
+  background:radial-gradient(700px 700px at 50% 42%,rgba(110,168,255,.10),transparent 70%),var(--bg);color:var(--ink);min-height:100vh;position:relative;overflow:hidden}
+.v-D .hud{position:absolute;top:26px;left:30px;right:30px;display:flex;justify-content:space-between;align-items:center;z-index:2}
+.v-D .word{font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+.v-D .word i{width:26px;height:26px;border-radius:8px;background:linear-gradient(145deg,var(--acc),#2c4ea8);display:grid;place-items:center;font-style:normal;font-size:13px}
+.v-D .stat{display:flex;align-items:center;gap:8px;border:1px solid #232a35;border-radius:999px;padding:7px 14px;font:11px ui-monospace,monospace;color:var(--mut)}
+.v-D .stat i{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 10px var(--live)}
+.v-D .center{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:80px 20px 120px}
+.v-D .rm{width:210px;height:500px;border-radius:36px;padding:22px;background:linear-gradient(160deg,#2f353d,#151a20 55%,#0e1216);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 40px 80px -24px #000,0 0 90px -40px var(--acc);display:flex;flex-direction:column;gap:18px;align-items:center}
+.v-D .rm .rhead{width:100%;display:flex;justify-content:space-between;padding:0 8px}
+.v-D .rm .led{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 12px var(--live);align-self:center}
+.v-D .rm .btn{width:46px;height:46px;border-radius:50%;color:#d3dae4;background:linear-gradient(180deg,#3e4650,#272e37);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 3px 6px #000}
+.v-D .rm .btn svg{width:19px;height:19px}
+.v-D .rm .mic{background:linear-gradient(180deg,#4d5765,#303844);color:#eef4ff}
+.v-D .rm .pad{width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 42% 30%,#39414c,#12171c 72%);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 10px #000;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center;padding:8px}
+.v-D .rm .pad .btn{width:38px;height:38px;background:transparent;box-shadow:none;border-radius:10px}
+.v-D .rm .pad .ok{width:50px;height:50px;border-radius:50%;background:linear-gradient(180deg,#444d58,#2a313a);font-size:12px;font-weight:800}
+.v-D .rm .pill{width:64px;height:48px;border-radius:14px}
+.v-D .rm .btn.lit{background:var(--live);color:#0a0f04;box-shadow:0 0 28px rgba(201,255,77,.8);transform:scale(.95)}
+.v-D .rm .rock{position:absolute;right:-10px;top:44%;display:flex;flex-direction:column;border-radius:8px;overflow:hidden}
+.v-D .rm .rock .btn{width:20px;height:38px;border-radius:0;font-size:14px}
+.v-D .caption{font:11px ui-monospace,monospace;color:var(--mut);letter-spacing:.05em}
+.v-D .ticker{position:absolute;left:0;right:0;bottom:86px;display:flex;justify-content:center;gap:22px;font:11px ui-monospace,monospace;color:var(--mut);pointer-events:none}
+.v-D .ticker b{color:var(--live);font-weight:500}
+.v-D .dock{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:7px;background:rgba(20,25,32,.9);border:1px solid #232a35;border-radius:16px;backdrop-filter:blur(10px);z-index:3}
+.v-D .dock button{border:0;background:transparent;color:var(--mut);padding:9px 15px;border-radius:10px;cursor:pointer;font:11px ui-monospace,monospace}
+.v-D .dock button.on{background:var(--acc);color:#fff}
+
+/* ============================================================
+   E · NATIVE — clean desktop-software look (Fluent / Win11 Settings)
+   Familiar chrome, standard controls, system type, no hero object.
+   ============================================================ */
+.v-E{--win:#f3f3f3;--pane:#fff;--ln:#e5e5e5;--ln2:#f0f0f0;--tx:#1b1b1b;--mut:#616161;--acc:#0067c0;
+  background:var(--win);color:var(--tx);font-family:"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;font-size:13px;min-height:100vh}
+.v-E .titlebar{height:36px;background:var(--win);border-bottom:1px solid var(--ln);display:flex;align-items:center;padding:0 12px;gap:10px}
+.v-E .wico{width:16px;height:16px;border-radius:4px;background:var(--acc);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700}
+.v-E .wtitle{font-size:12px;font-weight:600}
+.v-E .wctl{margin-left:auto;display:flex;color:#555}
+.v-E .wctl span{width:42px;height:36px;display:grid;place-items:center;font-size:11px}
+.v-E .shell{display:grid;grid-template-columns:228px 1fr;min-height:calc(100vh - 36px)}
+.v-E .nav{padding:16px 10px;border-right:1px solid var(--ln)}
+.v-E .search{height:30px;border:1px solid #d1d1d1;border-radius:4px;background:#fff;display:flex;align-items:center;gap:8px;padding:0 9px;color:#8a8a8a;font-size:12px}
+.v-E .navgrp{font-size:11px;font-weight:600;color:var(--mut);padding:16px 10px 5px}
+.v-E .navitem{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:4px;color:var(--tx);font-size:13px}
+.v-E .navitem.on{background:#fff;box-shadow:0 1px 2px #0002;font-weight:600;position:relative}
+.v-E .navitem.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--acc)}
+.v-E .navitem svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5}
+.v-E .main{padding:26px 34px 44px;max-width:940px}
+.v-E .crumb{font-size:12px;color:var(--mut)}
+.v-E h1{font-size:22px;font-weight:600;letter-spacing:-.01em;margin:5px 0 20px}
+.v-E .card{background:var(--pane);border:1px solid var(--ln);border-radius:6px;margin-bottom:14px;overflow:hidden}
+.v-E .card h2{font-size:13px;font-weight:600;padding:13px 18px;margin:0;border-bottom:1px solid var(--ln2)}
+.v-E .pad{padding:2px 18px}
+.v-E .setrow{display:flex;align-items:center;gap:16px;padding:11px 0;border-bottom:1px solid var(--ln2);min-height:54px}
+.v-E .setrow:last-child{border-bottom:0}
+.v-E .setrow .info{flex:1;min-width:0}
+.v-E .setrow .t{font-size:13px}
+.v-E .setrow .d{font-size:11.5px;color:var(--mut);margin-top:2px;line-height:1.4}
+.v-E .ctl{flex:0 0 auto}
+.v-E .tog{width:38px;height:20px;border-radius:10px;background:#c4c4c4;position:relative}
+.v-E .tog.on{background:var(--acc)}
+.v-E .tog::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0003;transition:transform .15s}
+.v-E .tog.on::after{transform:translateX(18px)}
+.v-E .btn{height:30px;padding:0 12px;border:1px solid #c7c7c7;border-radius:4px;background:#fff;color:var(--tx);cursor:pointer;font-size:12.5px}
+.v-E .btn:hover{background:#f9f9f9}
+.v-E .btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.v-E .status{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
+.v-E .status i{width:8px;height:8px;border-radius:50%;background:#107c10}
+.v-E .status.warn i{background:#c58500}
+.v-E .device{display:flex;gap:24px;align-items:center;padding:16px 18px}
+.v-E .rm{width:88px;height:210px;border-radius:14px;padding:9px;background:linear-gradient(160deg,#43474c,#25282c);display:flex;flex-direction:column;gap:7px;align-items:center;box-shadow:inset 0 1px 0 #ffffff22}
+.v-E .rm .rhead{width:100%;display:flex;justify-content:space-between;padding:0 3px}
+.v-E .rm .led{width:4px;height:4px;border-radius:50%;background:#7ee0a0;align-self:center}
+.v-E .rm .btn{width:20px;height:20px;border-radius:50%;background:#3a3e43;color:#d0d4d8}
+.v-E .rm .btn svg{width:10px;height:10px}
+.v-E .rm .pad{width:62px;height:62px;border-radius:50%;background:#2b2f33;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center;padding:3px}
+.v-E .rm .pad .btn{width:17px;height:17px;background:transparent;border-radius:4px}
+.v-E .rm .pad .ok{width:22px;height:22px;background:#43474c;font-size:6px;font-weight:700}
+.v-E .rm .pill{width:29px;height:21px;border-radius:6px}
+.v-E .rm .lbl{font-size:5px}
+.v-E .rm .rock{position:absolute;right:-5px;top:44%;display:flex;flex-direction:column}
+.v-E .rm .rock .btn{width:9px;height:16px;border-radius:0;font-size:8px}
+.v-E .rm .btn.lit{background:var(--acc);color:#fff;box-shadow:0 0 9px #0067c0}
+.v-E .devprops{flex:1;min-width:0}
+.v-E .devprops .row2{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--ln2);font-size:12.5px}
+.v-E .devprops .row2:last-child{border:0}
+.v-E .devprops .row2 span:first-child{color:var(--mut)}
+.v-E .note{font-size:12px;color:var(--mut);padding:11px 14px;background:#f8f8f8;border:1px solid var(--ln);border-radius:4px;line-height:1.6}
+
+/* ============================================================
+   F · NATIVE + DEVICE HERO — E's shell, remote as the home centrepiece
+   ============================================================ */
+.v-F .fdhero{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;
+  background:linear-gradient(115deg,#f7faff,#eef4fb);border:1px solid #d8e4f2;border-radius:7px;
+  padding:24px 28px;margin-bottom:15px}
+.v-F .fdhero h1{font-size:24px;font-weight:600;letter-spacing:-.02em;margin:12px 0 8px}
+.v-F .fdhero p{font-size:13px;line-height:1.6;color:var(--mut);max-width:48ch;margin:0 0 18px}
+.v-F .fdactions{display:flex;gap:8px}
+.v-F .fdmeta{font:11.5px ui-monospace,monospace;color:var(--mut);margin-top:18px}
+.v-F .fdstage{position:relative;display:flex;align-items:center;gap:18px}
+.v-F .fdstage::before{content:"";position:absolute;inset:-18px -26px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,103,192,.10),transparent 68%);pointer-events:none}
+.v-F .fdstage .rm{position:relative;width:152px;height:360px;border-radius:22px;padding:14px;gap:11px;
+  background:linear-gradient(158deg,#3d434b,#1b1f24 55%,#12161a);
+  box-shadow:inset 0 1px 0 #ffffff26,0 22px 40px -18px #1b2b3d88,0 0 0 1px #ffffff14}
+.v-F .fdstage .rm .btn{width:32px;height:32px}
+.v-F .fdstage .rm .btn svg{width:15px;height:15px}
+.v-F .fdstage .rm .mic{background:linear-gradient(180deg,#4d5765,#303844);color:#eef4ff}
+.v-F .fdstage .rm .pad{width:104px;height:104px}
+.v-F .fdstage .rm .pad .btn{width:27px;height:27px;border-radius:7px}
+.v-F .fdstage .rm .pad .ok{width:34px;height:34px;font-size:8px;font-weight:700}
+.v-F .fdstage .rm .pill{width:46px;height:34px;border-radius:10px}
+.v-F .fdstage .rm .lbl{font-size:7px}
+.v-F .fdstage .rm .rock .btn{width:13px;height:22px;font-size:9px}
+.v-F .fdstage .rm .btn.lit{background:var(--acc);color:#fff;box-shadow:0 0 14px rgba(0,103,192,.7)}
+.v-F .fdcap{position:relative;font:10px ui-monospace,monospace;letter-spacing:.1em;color:var(--mut);
+  writing-mode:vertical-rl;transform:rotate(180deg)}
+
+/* ============================================================
+   Accurate G9N9N body (Google TV / Chromecast voice remote).
+   Google's own layout: D-pad at top; left column Back/Home/YouTube/Power;
+   right column Assistant/Mute/Netflix/Input; volume rocker on right edge;
+   LED at top. Shared by every variant; sized with container units.
+   ============================================================ */
+.rm{container-type:size}
+.rm .rled{position:absolute;top:5cqh;left:50%;transform:translateX(-50%);width:3cqw;height:3cqw;border-radius:50%;background:#6fe39a;box-shadow:0 0 6px #6fe39a}
+.rm .rpad{position:absolute;top:7cqh;left:50%;transform:translateX(-50%);width:68cqw;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 42% 32%,#3c434c,#161b20 74%);box-shadow:inset 0 1px 0 #ffffff1f,0 2px 8px #0008;
+  display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center}
+.rm .rkey{border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5cqh;
+  color:#cfd5de;background:linear-gradient(180deg,#3e454e,#282e35);border-radius:50%;
+  box-shadow:inset 0 1px 0 #ffffff1f,0 2px 4px #0007;
+  transition:transform .1s,box-shadow .16s,background .16s}
+.rm .rkey svg{width:7cqw;height:7cqw;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.rm .rkey svg.fill{fill:currentColor;stroke:none}
+.rm .rkey svg.asst{width:7.5cqw;height:7.5cqw;fill:none;stroke:none}
+.rm .rkey .lbl{font-size:2.1cqw;font-weight:600;letter-spacing:.01em;line-height:1;white-space:nowrap}
+.rm .rkey.rdir{width:18cqw;height:18cqw;background:transparent;box-shadow:none;border-radius:20%}
+.rm .rkey.rok{width:26cqw;height:26cqw;background:linear-gradient(180deg,#47505a,#2c333b);font-size:3.2cqw;font-weight:800;color:#eef2f7}
+.rm .rcols{position:absolute;top:44cqh;left:50%;transform:translateX(-50%);width:94cqw;display:grid;grid-template-columns:1fr 1fr;gap:5cqw}
+.rm .rcol{display:flex;flex-direction:column;align-items:center;gap:6cqh}
+.rm .rcols .rkey{width:19cqw;height:19cqw}
+.rm .rcols .rkey.rsmall{width:15cqw;height:15cqw}
+.rm .rrock{position:absolute;right:-6cqw;top:9cqh;display:flex;flex-direction:column;border-radius:3cqw;overflow:hidden;box-shadow:0 2px 6px #0009}
+.rm .rrock .rkey{width:9cqw;height:13cqh;border-radius:0;font-size:4cqw;font-weight:600}
+.rm .rkey.lit{background:var(--acc,#4d6bfe);color:#fff;box-shadow:0 0 13px rgba(77,107,254,.75)}
+.v-C .rm .rkey,.v-C .rm .rpad,.v-C .rm .rkey.rok{background:transparent;border:1.4px solid #9aa0a6;box-shadow:none;color:#e3e6ea}
+.v-C .rm .rkey.lit{background:var(--sig);border-color:var(--sig)}
+.v-D .rm .rkey.lit{background:var(--live);color:#0a0f04;box-shadow:0 0 22px rgba(201,255,77,.8)}
+
+/* ---- prototype switcher (deliberately NOT part of any design) ---- */
+#sw{position:fixed;z-index:200;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;background:#000;color:#fff;border:1px solid #444;border-radius:999px;padding:5px 6px;box-shadow:0 8px 24px rgba(0,0,0,.4);font:12px system-ui,sans-serif}
+#sw button{border:0;background:#222;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:14px}
+#sw button:hover{background:#444}
+#sw .lab{padding:0 10px;min-width:184px;text-align:center;white-space:nowrap}
+#sw .lab b{color:#6ee7c8}
+#sw .k{font-size:10px;color:#888;padding-right:6px}
+@media (max-width:900px){
+  .v-A{grid-template-columns:1fr}.v-A .rail,.v-A .tele{display:none}
+  .v-B .grid{grid-template-columns:1fr}.v-B .card.span2{grid-column:span 1}
+  .v-C .hero{grid-template-columns:1fr}.v-C h1{font-size:40px}
+}
+</style>
+</head>
+<body>
+<div class="proto-note">PROTOTYPE · six directions · ← → or the bar below · nothing here touches the real app</div>
+<div id="app"></div>
+<div id="sw">
+  <button id="prev" aria-label="Previous">‹</button>
+  <div class="lab" id="lab"></div>
+  <button id="next" aria-label="Next">›</button>
+  <span class="k">← →</span>
+</div>
+
+<script>
+/* ---- synthetic data, faithful to the real app's state shape ---- */
+var D={
+  running:true, python:"3.13.7", addr:"A4:C1:38:9F:2D:71",
+  voice:"Ready · Connected", keys:"Not ready · 14 keys blocked", bt:"Connected",
+  setup:[
+    {n:"Runtime dependencies",s:"required",ok:true,note:"all present"},
+    {n:"Virtual audio cable",s:"required",ok:true,note:"installed · reboot done"},
+    {n:"Qianwen “Allow injection”",s:"optional",ok:false,note:"not installed"},
+    {n:"Launch at startup",s:"optional",ok:true,note:"enabled"},
+    {n:"One-click optimization",s:"optional",ok:true,note:"done · no more UAC"}
+  ],
+  map:[["OK","Enter"],["Back","Esc"],["Up","Wheel up"],["Down","Wheel down"],["Voice","Hold RAlt"],["Vol +","Ctrl + ="]],
+  events:[["12:04:31","VOICE down"],["12:04:35","VOICE up"],["12:05:02","OK down"],["12:05:03","OK up"],["12:06:11","UP down"]]
+};
+
+var IC={
+  power:'<svg viewBox="0 0 24 24"><path d="M12 2.6v8.2"/><path d="M7.6 5.7a7 7 0 1 0 8.8 0"/></svg>',
+  yt:'<svg viewBox="0 0 24 24"><rect x="2.6" y="5.4" width="18.8" height="13.2" rx="4"/><path class="fill" d="M10 8.8l5.4 3.2L10 15.2z"/></svg>',
+  nf:'<svg viewBox="0 0 24 24" stroke-width="2.4"><path d="M7 3.5v17M17 3.5v17M7 3.5l10 17M17 3.5L7 20.5"/></svg>',
+  mic:'<svg viewBox="0 0 24 24"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.5 11.2a6.5 6.5 0 0 0 13 0"/><path d="M12 17.8V21M8.6 21h6.8"/></svg>',
+  up:'<svg viewBox="0 0 24 24"><path d="M6.5 14.5l5.5-5.5 5.5 5.5"/></svg>',
+  left:'<svg viewBox="0 0 24 24"><path d="M14.5 6.5L9 12l5.5 5.5"/></svg>',
+  right:'<svg viewBox="0 0 24 24"><path d="M9.5 6.5L15 12l-5.5 5.5"/></svg>',
+  down:'<svg viewBox="0 0 24 24"><path d="M6.5 9.5L12 15l5.5-5.5"/></svg>',
+  back:'<svg viewBox="0 0 24 24"><path d="M10 6L4 12l6 6"/><path d="M4 12h10a6 6 0 0 1 6 6v1"/></svg>',
+  home:'<svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M9.5 21v-6h5v6"/></svg>',
+  mute:'<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>',
+  input:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 12h8M13 9l3 3-3 3"/></svg>'
+};
+/* Accurate G9N9N layout — source: Google "Meet the Chromecast Voice Remote" */
+function remote(showLabel){
+  var asst='<svg viewBox="0 0 24 24" class="asst" aria-hidden="true">'+
+    '<circle cx="8" cy="8" r="3.2" fill="#4285F4"/><circle cx="16" cy="8" r="3.2" fill="#EA4335"/>'+
+    '<circle cx="8" cy="16" r="3.2" fill="#FBBC05"/><circle cx="16" cy="16" r="3.2" fill="#34A853"/></svg>';
+  return '<div class="rm">'+
+   '<span class="rled"></span>'+
+   '<div class="rpad">'+
+     '<button class="rkey rdir" data-k="up" style="grid-area:1/2">'+IC.up+'</button>'+
+     '<button class="rkey rdir" data-k="left" style="grid-area:2/1">'+IC.left+'</button>'+
+     '<button class="rkey rok" data-k="ok" style="grid-area:2/2">OK</button>'+
+     '<button class="rkey rdir" data-k="right" style="grid-area:2/3">'+IC.right+'</button>'+
+     '<button class="rkey rdir" data-k="down" style="grid-area:3/2">'+IC.down+'</button>'+
+   '</div>'+
+   '<div class="rcols">'+
+     '<div class="rcol">'+
+       '<button class="rkey" data-k="back">'+IC.back+(showLabel?'<span class="lbl">Back</span>':'')+'</button>'+
+       '<button class="rkey" data-k="home">'+IC.home+(showLabel?'<span class="lbl">Home</span>':'')+'</button>'+
+       '<button class="rkey" data-k="youtube">'+IC.yt+(showLabel?'<span class="lbl">YouTube</span>':'')+'</button>'+
+       '<button class="rkey rsmall" data-k="power">'+IC.power+'</button>'+
+     '</div>'+
+     '<div class="rcol">'+
+       '<button class="rkey" data-k="voice">'+asst+(showLabel?'<span class="lbl">Assistant</span>':'')+'</button>'+
+       '<button class="rkey" data-k="mute">'+IC.mute+(showLabel?'<span class="lbl">Mute</span>':'')+'</button>'+
+       '<button class="rkey" data-k="netflix">'+IC.nf+(showLabel?'<span class="lbl">Netflix</span>':'')+'</button>'+
+       '<button class="rkey rsmall" data-k="input">'+IC.input+'</button>'+
+     '</div>'+
+   '</div>'+
+   '<div class="rrock"><button class="rkey" data-k="volup">+</button><button class="rkey" data-k="voldown">−</button></div>'+
+   '</div>';
+}
+var NAV='<svg viewBox="0 0 20 20"><path d="M10 2L2 10l8 8M2 10h11a5 5 0 0 1 5 5"/></svg>';
+
+function A(){return '<div class="v-A">'+
+ '<aside class="rail"><div class="logo">V</div>'+
+ '<div class="ric on">'+NAV+'</div><div class="ric">'+NAV+'</div><div class="ric">'+NAV+'</div><div class="ric">'+NAV+'</div></aside>'+
+ '<section class="stage"><div class="eyebrow">device online</div><h1>Your remote, remapped.</h1>'+
+ '<div class="sub">Google TV remote → keyboard &amp; mouse · local console</div>'+
+ '<div class="cradle">'+remote(true)+'</div>'+
+ '<div class="events"><div class="eh">LIVE SIGNAL</div>'+
+ D.events.map(function(e){return '<div class="er"><span class="d">●</span><span>'+e[0]+'</span><span>'+e[1]+'</span></div>'}).join('')+
+ '</div></section>'+
+ '<aside class="tele">'+
+ '<div class="gauge"><div class="gl">VOICE CHANNEL</div><div class="gv">Connected</div><div class="track"><i style="width:100%"></i></div></div>'+
+ '<div class="gauge warn"><div class="gl">KEY CHANNEL</div><div class="gv">Blocked · 14</div><div class="track"><i style="width:18%"></i></div></div>'+
+ '<div class="gauge"><div class="gl">BLUETOOTH</div><div class="gv">Connected</div><div class="track"><i style="width:100%"></i></div></div>'+
+ '<div class="mini"><b>python</b> 3.13.7<br><b>launcher</b> enabled<br><b>uac</b> optimized<br><b>host</b> 127.0.0.1:8787</div>'+
+ '</aside></div>';}
+
+function B(){return '<div class="v-B">'+
+ '<header class="top"><div class="brand"><i>V</i> vibe-mote</div>'+
+ '<div class="tabs"><span class="tab on">Overview</span><span class="tab">Key mapping</span><span class="tab">Voice</span><span class="tab">Settings</span><span class="tab">Logs</span></div>'+
+ '<div class="pill"><i></i> Remote connected</div><button class="btn pri">Start</button><button class="btn">Restart</button></header>'+
+ '<div class="wrap"><div class="grid">'+
+ '<div class="card span2"><h3>System</h3><div class="kpis">'+
+ '<div class="kpi"><div class="n">OK</div><div class="l">CLIENT RUNNING</div></div>'+
+ '<div class="kpi"><div class="n">14</div><div class="l">BLOCKED KEYS</div></div>'+
+ '<div class="kpi"><div class="n">5/5</div><div class="l">SETUP ITEMS</div></div></div>'+
+ '<div class="rows" style="margin-top:14px">'+
+ '<div class="r"><span class="k">Voice channel</span><span class="v"><span class="tag ok">READY</span> Connected</span></div>'+
+ '<div class="r"><span class="k">Key channel</span><span class="v"><span class="tag mut">BLOCKED</span> 14 keys</span></div>'+
+ '<div class="r"><span class="k">Bluetooth</span><span class="v">Connected · A4:C1:38:9F:2D:71</span></div>'+
+ '<div class="r"><span class="k">Autostart</span><span class="v"><span class="tag ok">ON</span></span></div></div></div>'+
+ '<div class="card"><h3>Remote · live</h3><div class="remote-mini">'+remote(false)+'</div></div>'+
+ '<div class="card"><h3>Setup checklist</h3>'+
+ D.setup.map(function(s){return '<div class="check '+(s.ok?'':'miss')+'"><span class="box">'+(s.ok?'✓':'!')+'</span><span class="t">'+s.n+'<div class="sub">'+s.note+'</div></span><span class="tag '+(s.ok?'ok':'mut')+'">'+s.s+'</span></div>'}).join('')+'</div>'+
+ '<div class="card"><h3>Key map</h3><table>'+D.map.map(function(m){return '<tr><td>'+m[0]+'</td><td>'+m[1]+'</td></tr>'}).join('')+'</table></div>'+
+ '<div class="card"><h3>Activity</h3><div class="feed">'+D.events.map(function(e){return '<div class="f"><span class="t">'+e[0]+'</span><span class="k">'+e[1]+'</span></div>'}).join('')+'</div></div>'+
+ '<div class="card"><h3>Diagnostics</h3><div class="actions"><button class="btn">Environment check</button><button class="btn">Reset radio</button><button class="btn">Keys self-test</button><button class="btn">Mic self-test</button><button class="btn">Install keys deps</button></div></div>'+
+ '</div></div></div>';}
+
+function C(){return '<div class="v-C">'+
+ '<header class="top"><div class="brand">vibe-mote<span>field manual / v1</span></div><div class="conn">● DEVICE ONLINE</div></header>'+
+ '<main><div class="hero"><div><h1>Make the<br>remote <em>yours.</em></h1>'+
+ '<p class="lead">A small companion for a Google TV remote. The microphone becomes your voice input; the buttons become the shortcuts you already use. No drivers, no background admin.</p></div>'+
+ '<div>'+remote(true)+'<div class="figcap">Fig. 1 — the device, as it is held.</div></div></div>'+
+ '<div class="sec"><h2>Getting under way</h2>'+
+ D.setup.map(function(s,i){return '<div class="step"><div class="num">0'+(i+1)+'</div><div class="body"><h4>'+s.n+'</h4><p>'+s.note+'</p></div><div class="state '+(s.ok?'':'no')+'">'+(s.ok?'DONE':'TO DO')+'</div></div>'}).join('')+
+ '</div>'+
+ '<div class="note"><b>On key mapping.</b> Button remapping injects a small module into the Bluetooth HID host. It needs administrator approval once; after “One-click optimization” it never asks again. Voice needs none of this — if you only want to talk, skip that step entirely.</div>'+
+ '</main></div>';}
+
+function OneScreen(){return '<div class="v-D">'+
+ '<div class="hud"><div class="word"><i>V</i> vibe-mote</div><div class="stat"><i></i> RUNNING · BT CONNECTED</div></div>'+
+ '<div class="center">'+remote(true)+'<div class="caption">PRESS ANY KEY ON THE REMOTE</div></div>'+
+ '<div class="ticker"><span>VOICE <b>READY</b></span><span>KEYS <b>14 BLOCKED</b></span><span>AUTOSTART <b>ON</b></span></div>'+
+ '<div class="dock"><button class="on">DEVICE</button><button>KEYS</button><button>VOICE</button><button>SETTINGS</button></div>'+
+ '</div>';}
+
+function Native(){return '<div class="v-E">'+
+ '<div class="titlebar"><span class="wico">V</span><span class="wtitle">vibe-mote</span>'+
+ '</div>'+
+ '<div class="shell"><nav class="nav"><div class="search">⌕ &nbsp;Search settings</div>'+
+ '<div class="navgrp">DEVICE</div>'+
+ '<div class="navitem on">'+NAV+'&nbsp; Device</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Key mapping</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Voice</div>'+
+ '<div class="navgrp">SYSTEM</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Audio</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Appearance</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Startup</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Diagnostics</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Logs</div></nav>'+
+ '<main class="main"><div class="crumb">vibe-mote &nbsp;›&nbsp; Device</div><h1>Device</h1>'+
+ '<div class="card"><h2>Overview</h2><div class="pad">'+
+ '<div class="setrow"><div class="info"><div class="t">Client</div><div class="d">The background service that listens for remote input.</div></div><div class="ctl"><span class="status"><i></i> Running</span></div></div>'+
+ '<div class="setrow"><div class="info"><div class="t">Bluetooth connection</div><div class="d">Google TV remote · A4:C1:38:9F:2D:71</div></div><div class="ctl"><span class="status"><i></i> Connected</span></div></div>'+
+ '<div class="setrow"><div class="info"><div class="t">Voice channel</div><div class="d">Microphone → virtual audio cable → input method</div></div><div class="ctl"><span class="status"><i></i> Ready</span></div></div>'+
+ '<div class="setrow"><div class="info"><div class="t">Key channel</div><div class="d">14 keys blocked — add the program folder to your antivirus allowlist.</div></div><div class="ctl"><span class="status warn"><i></i> Blocked</span></div></div>'+
+ '</div></div>'+
+ '<div class="card"><h2>Remote preview</h2><div class="device">'+remote(true)+
+ '<div class="devprops">'+
+ '<div class="row2"><span>Model</span><span>Google TV remote</span></div>'+
+ '<div class="row2"><span>Connection</span><span>Bluetooth LE</span></div>'+
+ '<div class="row2"><span>Buttons</span><span>15 detected</span></div>'+
+ '<div class="row2"><span>Last input</span><span>Voice · 12:04:31</span></div>'+
+ '<div class="row2"><span>Python runtime</span><span>3.13.7</span></div>'+
+ '</div></div></div>'+
+ '<div class="card"><h2>Startup &amp; permissions</h2><div class="pad">'+
+ '<div class="setrow"><div class="info"><div class="t">Launch at sign-in</div><div class="d">Start silently in the background when you log in.</div></div><div class="ctl"><div class="tog on"></div></div></div>'+
+ '<div class="setrow"><div class="info"><div class="t">One-click optimization</div><div class="d">Run the elevated startup task so UAC never prompts again.</div></div><div class="ctl"><span class="status"><i></i> Done</span></div></div>'+
+ '<div class="setrow"><div class="info"><div class="t">Virtual audio cable</div><div class="d">Required for voice input.</div></div><div class="ctl"><button class="btn">Manage</button></div></div>'+
+ '</div></div>'+
+ '<div class="note">Key mapping injects a module into the Bluetooth HID host and needs administrator approval once. Voice does not. If key mapping is blocked on a work PC, ask IT to allowlist the program folder.</div>'+
+ '</main></div></div>';}
+
+function NativeHero(){return '<div class="v-E v-F">'+
+ '<div class="titlebar"><span class="wico">V</span><span class="wtitle">vibe-mote</span>'+
+ '</div>'+
+ '<div class="shell"><nav class="nav"><div class="search">⌕ &nbsp;Search settings</div>'+
+ '<div class="navgrp">DEVICE</div>'+
+ '<div class="navitem on">'+NAV+'&nbsp; Home</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Key mapping</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Voice</div>'+
+ '<div class="navgrp">SYSTEM</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Audio</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Appearance</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Startup</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Diagnostics</div>'+
+ '<div class="navitem">'+NAV+'&nbsp; Logs</div></nav>'+
+ '<main class="main"><div class="crumb">vibe-mote &nbsp;›&nbsp; Home</div>'+
+ '<div class="fdhero"><div class="fddesc">'+
+ '<h1>Your remote</h1>'+
+ '<p>Press a key — it lights up here in real time.</p>'+
+ '<div class="fdactions"><button class="btn pri">Open key mapping</button><button class="btn">Voice settings</button></div>'+
+ '</div><div class="fdstage">'+remote(true)+'</div></div>'+
+ '<div class="card"><h2>Connection</h2><div class="pad">'+
+ '<div class="setrow"><div class="info"><div class="t">Bluetooth connection</div><div class="d">Google TV remote · A4:C1:38:9F:2D:71</div></div><div class="ctl"><span class="status"><i></i> Connected</span></div></div>'+
+ '<div class="setrow"><div class="info"><div class="t">Voice channel</div><div class="d">Microphone → virtual audio cable → input method</div></div><div class="ctl"><span class="status"><i></i> Ready</span></div></div>'+
+ '<div class="setrow"><div class="info"><div class="t">Key channel</div><div class="d">14 keys blocked — add the program folder to your antivirus allowlist.</div></div><div class="ctl"><span class="status warn"><i></i> Blocked</span></div></div>'+
+ '</div></div>'+
+ '<div class="card"><h2>Button map</h2><div class="pad">'+
+ D.map.map(function(m){return '<div class="setrow"><div class="info"><div class="t">'+m[0]+'</div></div><div class="ctl" style="font-family:ui-monospace,monospace;color:var(--acc)">'+m[1]+'</div></div>'}).join('')+
+ '</div></div></main></div></div>';}
+
+var V=[{k:"A",n:"Instrument",f:A},{k:"B",n:"Command Deck",f:B},{k:"C",n:"Field Manual",f:C},{k:"D",n:"One Screen",f:OneScreen},{k:"E",n:"Native",f:Native},{k:"F",n:"Native + Hero",f:NativeHero}];
+function current(){
+  var m=location.search.match(/[?&]variant=([A-F])/i)||location.hash.match(/variant=([A-F])/i);
+  return m?m[1].toUpperCase():"A";
+}
+function show(k){
+  var v=V.filter(function(x){return x.k===k})[0]||V[0];
+  document.getElementById("app").innerHTML=v.f();
+  document.getElementById("lab").innerHTML="<b>"+v.k+"</b> · "+v.n;
+  try{history.replaceState(null,"",location.pathname+"?variant="+v.k)}catch(e){location.hash="variant="+v.k}
+  wireRemote();
+}
+function wireRemote(){
+  Array.prototype.forEach.call(document.querySelectorAll(".rm .btn[data-k]"),function(b){
+    b.addEventListener("click",function(){
+      b.classList.add("lit");
+      setTimeout(function(){b.classList.remove("lit")},420);
+    });
+  });
+}
+document.getElementById("prev").onclick=function(){var i=V.map(function(x){return x.k}).indexOf(current());show(V[(i-1+V.length)%V.length].k)};
+document.getElementById("next").onclick=function(){var i=V.map(function(x){return x.k}).indexOf(current());show(V[(i+1)%V.length].k)};
+window.addEventListener("keydown",function(e){
+  if(/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
+  var i=V.map(function(x){return x.k}).indexOf(current());
+  if(e.key==="ArrowLeft"){show(V[(i-1+V.length)%V.length].k)}
+  if(e.key==="ArrowRight"){show(V[(i+1)%V.length].k)}
+});
+show(current());
+</script>
+</body>
+</html>
