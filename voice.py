@@ -529,9 +529,14 @@ class MicRelay:
     def set_active(self, on):
         """只在真正转发时才打开真实麦克风，平时不占用录音设备。"""
         on = bool(on)
-        if on and self.stream is None and self.device is not None:
-            self.start()
-        elif not on and self.stream is not None:
+        try:
+            if on and self.stream is None and self.device is not None:
+                self.start()
+            elif not on and self.stream is not None:
+                self.stop()
+        except Exception:
+            # 麦克风被拔掉/被独占时，这次不转发；下次按键再试。
+            # 不能让异常冒出 _alt_watch，否则整个看护任务会静默死掉。
             self.stop()
         self.active_holder = on and self.stream is not None
 
