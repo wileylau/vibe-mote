@@ -526,6 +526,15 @@ class MicRelay:
         self._t = 0.0
         self.frames = 0
 
+    def set_active(self, on):
+        """只在真正转发时才打开真实麦克风，平时不占用录音设备。"""
+        on = bool(on)
+        if on and self.stream is None and self.device is not None:
+            self.start()
+        elif not on and self.stream is not None:
+            self.stop()
+        self.active_holder = on and self.stream is not None
+
     @staticmethod
     def _usable(d):
         """这个录音端点能不能当"直通源"。
@@ -1034,10 +1043,9 @@ class VoiceRole(threading.Thread):
                 try:
                     r = MicRelay(self.sink, on_log=self._log)
                     if r.probe():
-                        r.start()
                         self.relay_obj = r
                         self._log(f"语音：麦克风直通已就绪（{r.name}，"
-                                  f"按住键盘语音快捷键时转发）")
+                                  f"按住键盘语音快捷键时才占用麦克风）")
                         self._relay_warned = False
                     elif not self._relay_warned:
                         self._relay_warned = True
@@ -1063,13 +1071,13 @@ class VoiceRole(threading.Thread):
         """
         vks = self.voice.mods + [self.voice.key] if self.voice.ok else []
         while not self.stop_flag.is_set():
-            if self.relay_obj and vks:
+            if self.relay_obj:
                 # `all` 而不是 `any`：组合键要**整组**按住才算"在按语音键"。
                 # 写成 any 的话，只要碰一下 Ctrl（很多组合键的修饰键）就开直通，
                 # 真实麦克风会被悄悄混进虚拟声卡里。
-                held = all(keys.key_is_down(v) for v in vks)
-                self.relay_obj.active_holder = bool(held) and not bool(
-                    getattr(self, "_active", False))
+                held = bool(vks) and all(keys.key_is_down(v) for v in vks)
+                self.relay_obj.set_active(
+                    held and not bool(getattr(self, "_active", False)))
             await asyncio.sleep(0.05)
 
     # ---------- 连接 ----------
