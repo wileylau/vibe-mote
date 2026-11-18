@@ -586,6 +586,117 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   .srow .k{flex:0 0 88px}
   .stage{padding:22px 18px}
 }
+
+/* ===================== F · NATIVE SKIN (agreed redesign) =====================
+   Windows-Settings-like shell layered over the existing structure so all
+   state / i18n / SSE wiring keeps working. Tokens remap, classes unchanged.
+   ========================================================================= */
+:root{
+  --bg:#f3f3f3; --panel:#ffffff; --panel-2:#f3f3f3; --elevated:#ffffff;
+  --elevated-hover:#f7f7f7; --hover:#f0f0f0; --selected:#e8f1fb;
+  --line:#e5e5e5; --line-soft:#f0f0f0; --line-strong:#e5e5e5;
+  --fg:#1b1b1b; --muted:#616161; --muted-2:#616161;
+  --accent:#0067c0; --accent-hover:#005a9e; --focus:#0067c0;
+  --radius:6px; --radius-sm:4px;
+  --shadow-1:none; --shadow-2:0 8px 24px rgba(0,0,0,.14); --glow:none;
+}
+[data-theme="dark"]{
+  --bg:#1b1b1b; --panel:#252525; --panel-2:#1f1f1f; --elevated:#2b2b2b;
+  --elevated-hover:#313131; --hover:#2d2d2d; --selected:#12395c;
+  --line:#3a3a3a; --line-soft:#303030; --line-strong:#3a3a3a;
+  --fg:#f3f3f3; --muted:#b5b5b5; --muted-2:#a8a8a8;
+  --accent:#4ca0f0; --accent-hover:#69b1f5;
+  --shadow-1:none;
+}
+body::before{display:none}
+body{font-family:"Segoe UI Variable Display","Segoe UI","Microsoft YaHei",system-ui,sans-serif;font-size:13px;line-height:1.5}
+/* 侧栏 → NavigationView */
+.sidebar{flex-basis:228px;width:228px;padding:14px 10px;gap:10px;background:var(--panel-2)}
+.brand{padding:0 8px 6px}
+.brand-mark{width:24px;height:24px;border-radius:5px;background:var(--accent);color:#fff;border:0}
+.brand-mark svg{width:14px;height:14px}
+.brand-title{font-size:13px}
+.brand-sub{font-size:10.5px;color:var(--muted-2)}
+.nav{gap:2px}
+.nav-item{padding:9px 10px;border-radius:4px;border:1px solid transparent;font-size:13px}
+.nav-item:hover{background:var(--hover)}
+.nav-item.active{background:var(--panel);border-color:transparent;box-shadow:0 1px 2px rgba(0,0,0,.10);color:var(--fg)}
+.nav-item.active::before{left:0;top:8px;bottom:8px;height:auto;width:3px;border-radius:2px;transform:none;background:var(--accent)}
+.conn{border-top:1px solid var(--line);padding:10px 8px;font-size:11.5px}
+/* 顶栏 → 标题栏 */
+.topbar{height:36px;min-height:36px;padding:0 14px;background:var(--panel-2);border-bottom:1px solid var(--line);position:sticky;top:0}
+.page-title{font-size:12.5px;font-weight:600;gap:8px}
+.page-title::before{width:16px;height:16px;border-radius:4px;background:var(--accent);content:"V";color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.topbar .pill{font-size:11px;padding:3px 9px}
+.signal{border:0;background:transparent;padding:4px 8px;font-size:11.5px}
+.topbar-right{gap:8px}
+/* 内容 */
+.content{padding:22px 26px 40px;max-width:1000px}
+.card{border-radius:var(--radius);border:1px solid var(--line);box-shadow:none;overflow:hidden;padding:0}
+.card + .card{margin-top:14px}
+.card-title{font-size:13px;font-weight:600;padding:13px 16px 11px;margin:0;border-bottom:1px solid var(--line-soft)}
+.card-title::before{width:3px;height:14px;border-radius:2px}
+.card > .rows,.card > .result{margin:0 16px}
+.card > .hint,.card > .note,.card > .row{margin-left:16px;margin-right:16px}
+.card > .row:first-child{margin-top:12px}
+.card > .row:last-child{margin-bottom:12px}
+.srow{padding:10px 0;min-height:52px;font-size:12.5px}
+.srow .k{flex:0 0 150px}
+.srow .v{font-size:12.5px}
+.btn{height:30px;padding:0 12px;border-radius:var(--radius-sm);font-size:12.5px}
+.btn.sm{height:26px;padding:0 10px;font-size:11.5px}
+.hint{font-size:11.5px;color:var(--muted)}
+.conn-actions{padding:12px 16px;margin:0;border-top:1px solid var(--line-soft)}
+.banner{border-radius:6px}
+.danger-zone{border-color:#e0b4b4}
+/* 首页 hero */
+.stage{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:center;
+  background:linear-gradient(115deg,#f7faff,#eef4fb);border:1px solid #d8e4f2;
+  border-radius:7px;padding:24px 28px;margin-bottom:14px;overflow:visible;
+}
+[data-theme="dark"] .stage{background:linear-gradient(115deg,#1a2230,#181e28);border-color:#2c3b50}
+.stage::after{display:none}
+.stage-info{padding:0}
+.stage-title{font-size:24px;font-weight:600;letter-spacing:-.02em;margin:0 0 8px;color:var(--fg)}
+.stage-sub{font-size:13px;color:var(--muted);margin:0 0 20px;max-width:48ch}
+.stage-actions{display:flex;gap:8px;flex-wrap:wrap}
+.stage-status,.stage-foot{display:none}
+.remote-wrap{display:flex;align-items:center}
+/* 准确的 G9N9N 遥控器 */
+.remote{position:relative;width:152px;height:360px;flex:0 0 auto;user-select:none;
+  border-radius:22px;padding:0;container-type:size;
+  background:linear-gradient(158deg,#3d434b,#1b1f24 55%,#12161a);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 22px 40px -18px rgba(27,43,61,.55)}
+.remote .rled{position:absolute;top:5cqh;left:50%;transform:translateX(-50%);width:3cqw;height:3cqw;border-radius:50%;background:#6fe39a;box-shadow:0 0 6px #6fe39a}
+.remote .rled.on{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.remote .rpad{position:absolute;top:7cqh;left:50%;transform:translateX(-50%);width:68cqw;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 42% 32%,#3c434c,#161b20 74%);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 2px 8px rgba(0,0,0,.5);
+  display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center}
+.remote .rkey{border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5cqh;
+  color:#cfd5de;background:linear-gradient(180deg,#3e454e,#282e35);border-radius:50%;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 2px 4px rgba(0,0,0,.45);
+  transition:transform .1s,box-shadow .16s,background .16s}
+.remote .rkey svg{width:7cqw;height:7cqw;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.remote .rkey svg.fill{fill:currentColor;stroke:none}
+.remote .rkey svg.asst{width:7.5cqw;height:7.5cqw;fill:none;stroke:none}
+.remote .rkey .lbl{font-size:6.5px;font-weight:600;line-height:1;white-space:nowrap}
+.remote .rkey.rdir{width:18cqw;height:18cqw;background:transparent;box-shadow:none;border-radius:20%}
+.remote .rkey.rok{width:26cqw;height:26cqw;background:linear-gradient(180deg,#47505a,#2c333b);font-size:3.2cqw;font-weight:800;color:#eef2f7}
+.remote .rcols{position:absolute;top:44cqh;left:50%;transform:translateX(-50%);width:94cqw;display:grid;grid-template-columns:1fr 1fr;gap:5cqw}
+.remote .rcol{display:flex;flex-direction:column;align-items:center;gap:6cqh}
+.remote .rcols .rkey{width:19cqw;height:19cqw}
+.remote .rcols .rkey.rsmall{width:15cqw;height:15cqw}
+.remote .rrock{position:absolute;right:-6cqw;top:9cqh;display:flex;flex-direction:column;border-radius:3cqw;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.55)}
+.remote .rrock .rkey{width:9cqw;height:13cqh;border-radius:0;font-size:4cqw;font-weight:600}
+.remote .rkey.lit{background:var(--accent);color:#fff;box-shadow:0 0 13px rgba(77,107,254,.75);transform:scale(.95)}
+.remote .rkey:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+@media (max-width:1000px){
+  .stage{grid-template-columns:1fr;justify-items:center;text-align:center;gap:20px}
+  .stage-info{display:flex;flex-direction:column;align-items:center}
+  .stage-sub{margin-left:auto;margin-right:auto}
+}
 </style>
 </head>
 <body>
@@ -636,6 +747,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     <header class="topbar">
       <div class="page-title" id="pageTitle">状态</div>
       <div class="topbar-right">
+        <span class="pill" id="heroPill" data-i18n="hero.checking">检测中</span>
         <div class="signal" id="signal">
           <span class="sig-dot"></span>
           <span id="sigText" data-i18n="sig.wait">等待遥控器信号</span>
@@ -654,76 +766,57 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     <div class="content">
       <!-- ==================== 状态 ==================== -->
       <section class="page" id="page-status">
-        <!-- 首页主视觉：一只会随报文点亮的遥控器，而不是又一张"状态卡片" -->
+        <!-- F · 首页主视觉：准确的 G9N9N 遥控器，按键随报文点亮 -->
         <div class="stage">
           <div class="stage-info">
-            <h1 class="stage-title" id="heroText" data-i18n="hero.reading">正在读取客户端状态…</h1>
-            <p class="stage-sub" id="heroMeta">—</p>
+            <h1 class="stage-title" id="heroText" data-i18n="remote.title">遥控器</h1>
+            <p class="stage-sub" id="heroMeta" data-i18n="remote.tip">按下遥控器任意键，这里会实时点亮。</p>
             <div class="stage-actions">
-              <button class="btn primary" type="button" data-act="start" data-i18n="act.start">启动</button>
-              <button class="btn" type="button" data-act="stop" data-i18n="act.stop">停止</button>
-              <button class="btn" type="button" data-act="restart" data-i18n="act.restart">重启</button>
-            </div>
-            <div class="stage-status" id="stateRows">
-              <div class="srow"><span class="k" data-i18n="nav.status">状态</span><span class="v" data-i18n="row.loading">正在读取…</span></div>
-            </div>
-            <div class="stage-foot">
-              <span class="pill" id="heroPill" data-i18n="hero.checking">检测中</span>
-              <span data-i18n="remote.hint">实时预览 · 按一下遥控器任意键试试</span>
+              <button class="btn primary" type="button" data-page="keys" data-i18n="act.openKeys">打开按键映射</button>
+              <button class="btn" type="button" data-page="voice" data-i18n="act.openVoice">语音设置</button>
             </div>
           </div>
           <div class="remote-wrap">
             <div class="remote" id="remote">
-              <div class="r-row r-top">
-                <button class="r-btn r-power" type="button" data-key="power" title="电源" data-i18n-title="kname.power">
-                  <svg viewBox="0 0 24 24"><path d="M12 2.6v8.2"/><path d="M7.6 5.7a7 7 0 1 0 8.8 0"/></svg>
-                </button>
-                <span class="r-led" id="rLed"></span>
+              <span class="rled" id="rLed"></span>
+              <div class="rpad">
+                <button class="rkey rdir" type="button" data-key="up" title="上" data-i18n-title="kname.up" style="grid-area:1/2"><svg viewBox="0 0 24 24"><path d="M6.5 14.5l5.5-5.5 5.5 5.5"/></svg></button>
+                <button class="rkey rdir" type="button" data-key="left" title="左" data-i18n-title="kname.left" style="grid-area:2/1"><svg viewBox="0 0 24 24"><path d="M14.5 6.5L9 12l5.5 5.5"/></svg></button>
+                <button class="rkey rok" type="button" data-key="ok" title="OK" data-i18n-title="kname.ok" style="grid-area:2/2">OK</button>
+                <button class="rkey rdir" type="button" data-key="right" title="右" data-i18n-title="kname.right" style="grid-area:2/3"><svg viewBox="0 0 24 24"><path d="M9.5 6.5L15 12l-5.5 5.5"/></svg></button>
+                <button class="rkey rdir" type="button" data-key="down" title="下" data-i18n-title="kname.down" style="grid-area:3/2"><svg viewBox="0 0 24 24"><path d="M6.5 9.5L12 15l5.5-5.5"/></svg></button>
               </div>
-              <div class="r-row">
-                <button class="r-btn r-hotkey" type="button" data-key="youtube" title="YouTube" data-i18n-title="kname.youtube">
-                  <svg viewBox="0 0 24 24"><rect x="2.6" y="5.4" width="18.8" height="13.2" rx="4"/><path class="fill" d="M10 8.8l5.4 3.2L10 15.2z"/></svg>
-                </button>
-                <button class="r-btn r-hotkey" type="button" data-key="netflix" title="NETFLIX" data-i18n-title="kname.netflix">
-                  <svg viewBox="0 0 24 24" stroke-width="2.4"><path d="M7 3.5v17M17 3.5v17M7 3.5l10 17M17 3.5L7 20.5"/></svg>
-                </button>
-                <button class="r-btn r-mic" type="button" data-key="voice" title="语音" data-i18n-title="kname.voice">
-                  <svg viewBox="0 0 24 24"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.5 11.2a6.5 6.5 0 0 0 13 0"/><path d="M12 17.8V21M8.6 21h6.8"/></svg>
-                </button>
+              <div class="rcols">
+                <div class="rcol">
+                  <button class="rkey" type="button" data-key="back" title="返回" data-i18n-title="kname.back"><svg viewBox="0 0 24 24"><path d="M10 6L4 12l6 6"/><path d="M4 12h10a6 6 0 0 1 6 6v1"/></svg><span class="lbl" data-i18n="kname.back">返回</span></button>
+                  <button class="rkey" type="button" data-key="home" title="主页" data-i18n-title="kname.home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M9.5 21v-6h5v6"/></svg><span class="lbl" data-i18n="kname.home">主页</span></button>
+                  <button class="rkey" type="button" data-key="youtube" title="YouTube" data-i18n-title="kname.youtube"><svg viewBox="0 0 24 24"><rect x="2.6" y="5.4" width="18.8" height="13.2" rx="4"/><path class="fill" d="M10 8.8l5.4 3.2L10 15.2z"/></svg><span class="lbl">YouTube</span></button>
+                  <button class="rkey rsmall" type="button" data-key="power" title="电源" data-i18n-title="kname.power"><svg viewBox="0 0 24 24"><path d="M12 2.6v8.2"/><path d="M7.6 5.7a7 7 0 1 0 8.8 0"/></svg></button>
+                </div>
+                <div class="rcol">
+                  <button class="rkey" type="button" data-key="voice" title="语音助手" data-i18n-title="kname.voice"><svg viewBox="0 0 24 24" class="asst"><circle cx="8" cy="8" r="3.2" fill="#4285F4"/><circle cx="16" cy="8" r="3.2" fill="#EA4335"/><circle cx="8" cy="16" r="3.2" fill="#FBBC05"/><circle cx="16" cy="16" r="3.2" fill="#34A853"/></svg><span class="lbl" data-i18n="kname.voice">语音</span></button>
+                  <button class="rkey" type="button" data-key="mute" title="静音" data-i18n-title="kname.mute"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg><span class="lbl" data-i18n="kname.mute">静音</span></button>
+                  <button class="rkey" type="button" data-key="netflix" title="NETFLIX" data-i18n-title="kname.netflix"><svg viewBox="0 0 24 24" stroke-width="2.4"><path d="M7 3.5v17M17 3.5v17M7 3.5l10 17M17 3.5L7 20.5"/></svg><span class="lbl">Netflix</span></button>
+                  <button class="rkey rsmall" type="button" data-key="input" title="输入源" data-i18n-title="kname.input"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 12h8M13 9l3 3-3 3"/></svg></button>
+                </div>
               </div>
-              <div class="r-dpad">
-                <button class="r-btn r-up" type="button" data-key="up" title="上" data-i18n-title="kname.up"><svg viewBox="0 0 24 24"><path d="M6.5 14.5l5.5-5.5 5.5 5.5"/></svg></button>
-                <button class="r-btn r-left" type="button" data-key="left" title="左" data-i18n-title="kname.left"><svg viewBox="0 0 24 24"><path d="M14.5 6.5L9 12l5.5 5.5"/></svg></button>
-                <button class="r-btn r-ok" type="button" data-key="ok" title="OK" data-i18n-title="kname.ok">OK</button>
-                <button class="r-btn r-right" type="button" data-key="right" title="右" data-i18n-title="kname.right"><svg viewBox="0 0 24 24"><path d="M9.5 6.5L15 12l-5.5 5.5"/></svg></button>
-                <button class="r-btn r-down" type="button" data-key="down" title="下" data-i18n-title="kname.down"><svg viewBox="0 0 24 24"><path d="M6.5 9.5L12 15l5.5-5.5"/></svg></button>
-              </div>
-              <div class="r-row">
-                <button class="r-btn r-pill" type="button" data-key="back" title="返回" data-i18n-title="kname.back">
-                  <svg viewBox="0 0 24 24"><path d="M10 6L4 12l6 6"/><path d="M4 12h10a6 6 0 0 1 6 6v1"/></svg>
-                  <span class="r-lbl" data-i18n="kname.back">返回</span>
-                </button>
-                <button class="r-btn r-pill" type="button" data-key="home" title="主页" data-i18n-title="kname.home">
-                  <svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M9.5 21v-6h5v6"/></svg>
-                  <span class="r-lbl" data-i18n="kname.home">主页</span>
-                </button>
-              </div>
-              <div class="r-row">
-                <button class="r-btn r-pill" type="button" data-key="mute" title="静音" data-i18n-title="kname.mute">
-                  <svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>
-                  <span class="r-lbl" data-i18n="kname.mute">静音</span>
-                </button>
-                <button class="r-btn r-pill" type="button" data-key="input" title="输入源" data-i18n-title="kname.input">
-                  <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 12h8M13 9l3 3-3 3"/></svg>
-                  <span class="r-lbl" data-i18n="kname.input">输入源</span>
-                </button>
-              </div>
-              <div class="r-rocker">
-                <button class="r-btn r-vol" type="button" data-key="volup" title="音量+" data-i18n-title="kname.volupSub">+</button>
-                <button class="r-btn r-vol" type="button" data-key="voldown" title="音量−" data-i18n-title="kname.voldownSub">−</button>
+              <div class="rrock">
+                <button class="rkey" type="button" data-key="volup" title="音量+" data-i18n-title="kname.volupSub">+</button>
+                <button class="rkey" type="button" data-key="voldown" title="音量−" data-i18n-title="kname.voldownSub">−</button>
               </div>
             </div>
-            <div class="remote-caption" data-i18n="remote.caption">Google TV 蓝牙遥控器 · 按键实时点亮</div>
+          </div>
+        </div>
+
+        <div class="card connection-card">
+          <div class="card-title" data-i18n="card.state">运行状态</div>
+          <div class="rows" id="stateRows">
+            <div class="srow"><span class="k" data-i18n="nav.status">状态</span><span class="v" data-i18n="row.loading">正在读取…</span></div>
+          </div>
+          <div class="row conn-actions">
+            <button class="btn primary" type="button" data-act="start" data-i18n="act.start">启动</button>
+            <button class="btn" type="button" data-act="stop" data-i18n="act.stop">停止</button>
+            <button class="btn" type="button" data-act="restart" data-i18n="act.restart">重启</button>
           </div>
         </div>
 
@@ -1108,6 +1201,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       'sig.down': '收到 · {0}',
       'sig.up': '松开 · {0}',
       'sig.unmapped': ' · 未映射',
+      'remote.title': '遥控器',
+      'remote.tip': '按下遥控器任意键，这里会实时点亮。',
       'remote.hint': '实时预览 · 按一下遥控器任意键试试',
       'remote.caption': 'Google TV 蓝牙遥控器 · 按键实时点亮',
       'hero.checking': '检测中',
@@ -1119,7 +1214,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       'hero.stoppedText': '客户端已停止',
       'hero.remote': '遥控器 {0}',
       'hero.noRemote': '尚未配置遥控器地址',
-      'card.state': '运行状态',
+      'card.state': '连接与运行状态',
       'card.deps': '依赖与版本',
       'row.loading': '正在读取…',
       'row.deps': '依赖',
@@ -1392,6 +1487,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       'log.clear': '清屏',
       'log.empty': '等待日志…',
       'log.cleared': '已清屏（不影响后端日志）',
+      'act.openKeys': '打开按键映射',
+      'act.openVoice': '语音设置',
       'act.start': '启动',
       'act.stop': '停止',
       'act.restart': '重启',
@@ -1485,6 +1582,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       'sig.down': 'Pressed · {0}',
       'sig.up': 'Released · {0}',
       'sig.unmapped': ' · not mapped',
+      'remote.title': 'Your remote',
+      'remote.tip': 'Press a key — it lights up here in real time.',
       'remote.hint': 'Live preview · press any key on your remote',
       'remote.caption': 'Google TV Bluetooth remote · lights up as you press',
       'hero.checking': 'Checking',
@@ -1496,7 +1595,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       'hero.stoppedText': 'The client has stopped',
       'hero.remote': 'Remote {0}',
       'hero.noRemote': 'No remote address configured yet',
-      'card.state': 'Runtime status',
+      'card.state': 'Connection & status',
       'card.deps': 'Dependencies & versions',
       'row.loading': 'Reading…',
       'row.deps': 'Dependencies',
@@ -1770,6 +1869,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       'log.clear': 'Clear',
       'log.empty': 'Waiting for logs…',
       'log.cleared': 'Cleared (backend logs are unaffected)',
+      'act.openKeys': 'Open key mapping',
+      'act.openVoice': 'Voice settings',
       'act.start': 'Start',
       'act.stop': 'Stop',
       'act.restart': 'Restart',
@@ -2123,8 +2224,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     if (!s) {
       heroPill.className = 'pill bad';
       heroPill.textContent = t('hero.noConn');
-      heroText.textContent = t('hero.noConnText');
-      heroMeta.textContent = t('hero.noConnMeta');
+      heroText.textContent = t('remote.title');
+      heroMeta.textContent = t('remote.tip');
       rows.appendChild(srow(t('st.client'), t('row.clientDown')));
       rows.appendChild(srow(t('row.next'), t('row.nextStep')));
       setConn('off', 'conn.idle');
@@ -2137,11 +2238,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     var running = !!s.running;
     heroPill.className = 'pill ' + (running ? 'ok' : 'bad');
     heroPill.textContent = running ? t('st.running') : t('st.stopped');
-    heroText.textContent = running ? t('hero.runningText') : t('hero.stoppedText');
-    var meta = [];
-    if (s.remote_addr) meta.push(t('hero.remote', s.remote_addr));
-    if (s.versions && s.versions.python) meta.push('Python ' + s.versions.python);
-    heroMeta.textContent = meta.length ? meta.join(' · ') : t('hero.noRemote');
+    // F 布局：标题与说明是稳定的；连接事实由下方「运行状态」表逐项呈现
+    heroText.textContent = t('remote.title');
+    heroMeta.textContent = t('remote.tip');
 
     var voice = s.voice || {};
     var keys = s.keys || {};
@@ -3418,12 +3517,12 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   }
 
   function bindUI() {
-    $$('#nav .nav-item').forEach(function (b) {
+    $$('[data-page]').forEach(function (b) {
       b.addEventListener('click', function () { showPage(b.dataset.page); });
     });
 
-    // 状态页动作
-    $$('.hero-actions .btn').forEach(function (b) {
+    // 状态页动作（启动 / 停止 / 重启 —— 现在放在"运行状态"卡片里）
+    $$('[data-act]').forEach(function (b) {
       b.addEventListener('click', function () { actionStart(b.dataset.act); });
     });
 
