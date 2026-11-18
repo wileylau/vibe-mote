@@ -1107,7 +1107,7 @@ class VoiceRole(threading.Thread):
             if self.relay_obj:
                 self.relay_obj.set_active(
                     held and not bool(getattr(self, "_active", False)))
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(0.1)   # 10 Hz 足够跟上按键，别让后台线程白醒 20 次/秒
 
     # ---------- 连接 ----------
     def _new_client(self, dev, timeout):
