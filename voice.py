@@ -852,6 +852,7 @@ class VoiceRole(threading.Thread):
         self.sink = None
         self.relay_obj = None
         self.connected = False
+        self._hotkey_held = False        # 键盘语音键按住中（听写也需要虚拟声卡）
         self.note = i18n.L("未启动", "Not started")
         self.sessions = 0
         self.frames = 0
@@ -992,77 +993,96 @@ class VoiceRole(threading.Thread):
                 self.sink = None
             self.voice.release()
 
-    async def _audio_supervisor(self):
-        """看护「音频出口 + 内置麦克风直通」：没有就建，坏了就重建。"""
-        while not self.stop_flag.is_set():
-            if self.sink is not None and not self.sink.alive:
-                self._log("语音：音频出口掉线，正在重开…")
-                self.sink.stop()
-                self.sink = None
-                if self.relay_obj:
-                    self.relay_obj.stop()
-                    self.relay_obj = None
+    def _open_audio(self):
+        """现在就把虚拟声卡出口（和可选的真实麦克风直通）准备好。
 
-            if self.sink is None:
-                out_idx, _in_idx = find_cable()
-                if out_idx is None:
-                    if not self._cable_warned:
-                        self._cable_warned = True
-                        self.note = i18n.L("等虚拟声卡就绪…",
-                                           "Waiting for the virtual audio cable…")
-                        self._emit("status", {"connected": False, "note": self.note})
-                        self._log("语音：暂时找不到虚拟声卡 VB-CABLE"
-                                  "（开机后声卡常比程序晚就绪）—— 每 5 秒重试")
-                else:
-                    try:
-                        s = Sink(out_idx, gain=self.gain, agc=self.agc,
-                                 on_log=self._log)
-                        s.start()
-                        self.sink = s
-                        self._cable_warned = False
-                        # ★ 把**设备名**一起写进日志：用户最常问的就是"虚拟声卡的 in/out
-                        #   到底哪个是哪个"。日志里直接说清"程序往哪写、输入法该读哪个"，
-                        #   能省一整轮来回（真机上被问过两次）。
-                        dev_out = ""
-                        try:
-                            import sounddevice as sd
-                            dev_out = str(sd.query_devices(out_idx)["name"])
-                        except Exception:
-                            pass
-                        try:
-                            _ci, _co = find_cable()
-                        except Exception:
-                            _ci = _co = None
-                        self._log("语音：音频出口已开启（"
-                                  + ("AGC" if self.agc else f"固定增益 {self.gain}x")
-                                  + "）" + (f" → 写入「{dev_out}」" if dev_out else "")
-                                  + (f"；输入法那边请选「{_dev_name(_co)}」（录制设备）"
-                                     if _co is not None else ""))
-                    except Exception as e:
-                        if not self._cable_warned:
-                            self._cable_warned = True
-                            self._log(f"语音：打开音频出口失败 "
-                                      f"{type(e).__name__}: {e}（每 5 秒重试）")
-
-            if self.want_relay and self.sink is not None and self.relay_obj is None:
-                try:
-                    r = MicRelay(self.sink, on_log=self._log)
-                    if r.probe():
-                        self.relay_obj = r
-                        self._log(f"语音：麦克风直通已就绪（{r.name}，"
-                                  f"按住键盘语音快捷键时才占用麦克风）")
-                        self._relay_warned = False
-                    elif not self._relay_warned:
-                        self._relay_warned = True
-                        self._log("语音：没找到可用的真实麦克风，直通暂时不开"
-                                  "（系统默认录音设备若是 CABLE Output，"
-                                  "直通会自己喂自己，所以这里故意不用）")
-                except Exception:
-                    pass
-            elif not self.want_relay and self.relay_obj is not None:
+        只在「连着遥控器」或「按着键盘语音键」时调用：前者要在订阅 GATT
+        音频通知前就绪，否则丢起始帧；后者不能等看护任务的 5 秒，否则
+        键盘听写的前半句没声音。空闲时由看护任务关掉，不再 50 次/秒写静音。
+        """
+        if self.sink is not None and not self.sink.alive:
+            self._log("语音：音频出口掉线，正在重开…")
+            self.sink.stop()
+            self.sink = None
+            if self.relay_obj:
                 self.relay_obj.stop()
                 self.relay_obj = None
 
+        if self.sink is None:
+            out_idx, _in_idx = find_cable()
+            if out_idx is None:
+                if not self.connected and not self._cable_warned:
+                    self._cable_warned = True
+                    self.note = i18n.L("等虚拟声卡就绪…",
+                                       "Waiting for the virtual audio cable…")
+                    self._emit("status", {"connected": False, "note": self.note})
+                    self._log("语音：暂时找不到虚拟声卡 VB-CABLE"
+                              "（开机后声卡常比程序晚就绪）—— 每 5 秒重试")
+                return
+            try:
+                s = Sink(out_idx, gain=self.gain, agc=self.agc,
+                         on_log=self._log)
+                s.start()
+                self.sink = s
+                self._cable_warned = False
+                # ★ 把**设备名**一起写进日志：用户最常问的就是"虚拟声卡的 in/out
+                #   到底哪个是哪个"。日志里直接说清"程序往哪写、输入法该读哪个"，
+                #   能省一整轮来回（真机上被问过两次）。
+                dev_out = ""
+                try:
+                    import sounddevice as sd
+                    dev_out = str(sd.query_devices(out_idx)["name"])
+                except Exception:
+                    pass
+                try:
+                    _ci, _co = find_cable()
+                except Exception:
+                    _ci = _co = None
+                self._log("语音：音频出口已开启（"
+                          + ("AGC" if self.agc else f"固定增益 {self.gain}x")
+                          + "）" + (f" → 写入「{dev_out}」" if dev_out else "")
+                          + (f"；输入法那边请选「{_dev_name(_co)}」（录制设备）"
+                             if _co is not None else ""))
+            except Exception as e:
+                if not self._cable_warned:
+                    self._cable_warned = True
+                    self._log(f"语音：打开音频出口失败 "
+                              f"{type(e).__name__}: {e}（每 5 秒重试）")
+                return
+
+        if self.want_relay and self.relay_obj is None:
+            try:
+                r = MicRelay(self.sink, on_log=self._log)
+                if r.probe():
+                    self.relay_obj = r
+                    self._log(f"语音：麦克风直通已就绪（{r.name}，"
+                              f"按住键盘语音快捷键时才占用麦克风）")
+                    self._relay_warned = False
+                elif not self._relay_warned:
+                    self._relay_warned = True
+                    self._log("语音：没找到可用的真实麦克风，直通暂时不开"
+                              "（系统默认录音设备若是 CABLE Output，"
+                              "直通会自己喂自己，所以这里故意不用）")
+            except Exception:
+                pass
+        elif not self.want_relay and self.relay_obj is not None:
+            self.relay_obj.stop()
+            self.relay_obj = None
+
+    async def _audio_supervisor(self):
+        """看护音频出口：只在连着遥控器或按着语音键时占用，空闲就释放。"""
+        while not self.stop_flag.is_set():
+            if self.connected or self._hotkey_held:
+                self._open_audio()
+            elif self.sink is not None or self.relay_obj is not None:
+                if self.relay_obj:
+                    self.relay_obj.stop()
+                    self.relay_obj = None
+                if self.sink:
+                    self.sink.stop()
+                    self.sink = None
+                self._cable_warned = False
+                self._log("语音：空闲，已释放虚拟声卡与麦克风")
             await asyncio.sleep(5)
 
     async def _alt_watch(self):
@@ -1076,11 +1096,15 @@ class VoiceRole(threading.Thread):
         """
         vks = self.voice.mods + [self.voice.key] if self.voice.ok else []
         while not self.stop_flag.is_set():
+            # `all` 而不是 `any`：组合键要**整组**按住才算"在按语音键"。
+            # 写成 any 的话，只要碰一下 Ctrl（很多组合键的修饰键）就开直通，
+            # 真实麦克风会被悄悄混进虚拟声卡里。
+            held = bool(vks) and all(keys.key_is_down(v) for v in vks)
+            if held and not self._hotkey_held:
+                # 键盘听写要立刻有出口，不能等看护任务的 5 秒。
+                self._open_audio()
+            self._hotkey_held = held
             if self.relay_obj:
-                # `all` 而不是 `any`：组合键要**整组**按住才算"在按语音键"。
-                # 写成 any 的话，只要碰一下 Ctrl（很多组合键的修饰键）就开直通，
-                # 真实麦克风会被悄悄混进虚拟声卡里。
-                held = bool(vks) and all(keys.key_is_down(v) for v in vks)
                 self.relay_obj.set_active(
                     held and not bool(getattr(self, "_active", False)))
             await asyncio.sleep(0.05)
@@ -1358,6 +1382,8 @@ class VoiceRole(threading.Thread):
                 except Exception:
                     pass
 
+        # ★ 出口必须在订阅前就绪：新建声卡要等它起来，否则丢掉起始帧。
+        self._open_audio()
         # 音频订阅必须先于状态订阅，避免丢掉起始帧
         await client.start_notify(audio, on_audio)
         await client.start_notify(status, on_status)
