@@ -1288,6 +1288,13 @@ class VoiceRole(threading.Thread):
         ctl = find(ATVV_CTL)
         if not (audio and status):
             self.misses += 1
+            # 连上了却看不到 ATVV：多半是配对/服务表缓存失效（HID 占着那条唯一连接），
+            # 真机上最有效的恢复是删掉设备重新配对。note 必须跟着改，否则界面会一直
+            # 显示上一条"还没填地址"之类的旧话，把用户引到错的方向。
+            self.note = i18n.L(
+                "已连上但没有语音服务（ATVV）—— 配对可能已失效：删除设备后按住【返回+主页】重新配对",
+                "Connected but no voice service (ATVV) — pairing may be stale: remove the device, "
+                "then hold 【Back + Home】 to re-pair")
             self._log(f"语音：缺少 ATVV 特征（本次枚举到 {len(uuids)} 个服务："
                       f"{', '.join(uuids) or '空'}）")
             if self.misses >= 3:
@@ -1338,9 +1345,26 @@ class VoiceRole(threading.Thread):
                 except Exception:
                     pass
 
+        self._log("语音：特征表 " + ", ".join(
+            f"{str(c.uuid)[:8]}/0x{c.handle:x}/{','.join(c.properties)}"
+            for c in chars))
         # 音频订阅必须先于状态订阅，避免丢掉起始帧
         await client.start_notify(audio, on_audio)
         await client.start_notify(status, on_status)
+        # 临时诊断：其余可通知特征也挂上，确认音频帧到底落在哪条特征上
+        _misc = [0]
+        for c in chars:
+            if c in (audio, status) or not ({"notify", "indicate"} & set(c.properties)):
+                continue
+            def _any(_c, data, _u=str(c.uuid)):
+                _misc[0] += 1
+                if _misc[0] <= 8:
+                    b = bytes(data)
+                    self._log(f"语音：杂项通知 {_u} len={len(b)} {b[:8].hex()}")
+            try:
+                await client.start_notify(c, _any)
+            except Exception:
+                pass
         if ctl:
             try:
                 # ★ 必须声明 ATVV v1.0 + 16k 编解码 + 按住/切换交互位。旧的
@@ -1384,6 +1408,12 @@ class VoiceRole(threading.Thread):
     # ---------- 语音键事件 ----------
     def _on_status(self, b: bytes):
         active = getattr(self, "_active", False)
+        if b[0] == 0x0B:
+            fs = ((b[5] << 8) | b[6]) if len(b) >= 7 else 0
+            self._log(f"语音：能力协商 {b.hex()}（帧长 {fs}）")
+            return
+        if b[0] in (0x04, 0x00):
+            self._log(f"语音：ATVV 控制帧 {b.hex()}")
         if b[0] == 0x04 and not active:
             self._active = True
             self.sessions += 1
@@ -1406,7 +1436,7 @@ class VoiceRole(threading.Thread):
                 self._log("语音：⚠ 音频帧太少 —— 遥控器没在送音频（多半没真正进录音态）")
             elif self.sink is None:
                 self._log("语音：⚠ 音频出口还没就绪，这段没送出去（看护任务正在重试）")
-        elif b[0] not in (0x00,):
+        elif b[0] not in (0x00, 0x04):
             # 既不是"开始说话"(0x04) 也不是"结束"(0x00)：把原始字节打出来。
             # 遥控器换过固件/重新配对之后，通知里的操作码**有可能不一样** ——
             # 以前这种情况会被静默丢掉，表现就是"按语音键日志一行都没有"，
